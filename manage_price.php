@@ -30,11 +30,12 @@ function getPricePageID() {
 	return $priceListPageId;
 }
 
-function updatePost($postId, $newPrice)
+function updatePost($postId, $newPrice, $priceFileRowGoodsStatus)
 {
 	try {
 		//update_field( 'availability', $newStatus, $postId );
 		update_field( 'price', $newPrice, $postId );
+		update_field('availability', $priceFileRowGoodsStatus, $postId);
 		return true;
 	} catch (Exception $e) {
 		echo 'Выброшено исключение: ',  $e->getMessage(), "\n";
@@ -52,7 +53,7 @@ function transliterateText($textCyrrillic) {
 
 function insertCategory($categoryName, $catParentId = '')
 {
-    //TODO: insert or return catId;
+	$categoryName = trim($categoryName);
 	$category_id = get_cat_ID($categoryName);
 	if (!$category_id){	
 		$transliterateUrl = transliterateText($categoryName);
@@ -73,7 +74,7 @@ function insertPost($parentCategoryName, $categoryName, $postName, $price)
         $categoryId = insertCategory($categoryName, $parentCategoryId);
 
         $post_data = array(
-            'post_title'    => sanitize_text_field( $postName ),
+            'post_title'    => sanitize_text_field( trim($postName) ),
             'post_content'  => '',
             'post_status'   => 'publish',
             'post_author'   => 1,
@@ -83,7 +84,6 @@ function insertPost($parentCategoryName, $categoryName, $postName, $price)
         // Вставляем запись в базу данных
         $postId = wp_insert_post( $post_data );
 
-        //TODO: add post with category and parentCategory, status and price
 		update_field( 'price', $price, $postId );
 
         return get_permalink($postId);
@@ -140,10 +140,11 @@ if( wp_verify_nonce( $_POST['fileup_nonce'], 'my_file_upload' ) ) {
 						}
 						
 						// We get file row values
-                        $priceFileRowParentCategoryName = $value[0];
-                        $priceFileRowCategoryName = $value[1];
-						$priceFileRowGoodsName = $value[2];
+                        $priceFileRowParentCategoryName = trim($value[0]);
+                        $priceFileRowCategoryName = trim($value[1]);
+						$priceFileRowGoodsName = trim($value[2]);
 						$priceFileRowGoodsPrice = $value[3];
+						$priceFileRowGoodsStatus = trim($value[4]);
 
 						$postFromDB = get_post_by_title($priceFileRowGoodsName);
 						
@@ -151,10 +152,10 @@ if( wp_verify_nonce( $_POST['fileup_nonce'], 'my_file_upload' ) ) {
 							echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Найдено совпадение строки прайса с каталогом по имени товара: "' . $priceFileRowGoodsName . '"</p>';
 							
 							// Update post related to row from file ($postFromDB)
-							$resultUpdate = updatePost($postFromDB->ID, $priceFileRowGoodsPrice);
+							$resultUpdate = updatePost($postFromDB->ID, $priceFileRowGoodsPrice, $priceFileRowGoodsStatus);
 							
 							if ($resultUpdate) {
-								echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара установлен новый статус: "В наличии"</p>';
+								echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара установлен статус: "' . $priceFileRowGoodsStatus . '"</p>';
 								echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара установлена новая цена: "' . $priceFileRowGoodsPrice . '"</p>';
 							} else {
 								echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Ошибка обновления товара: "' . $priceFileRowGoodsName . '", данные не обновлены.</p>';
