@@ -167,7 +167,7 @@ if( wp_verify_nonce( $_POST['fileup_nonce'], 'my_file_upload' ) ) {
 
                             if ($resultInsertLink) {
                                 echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Ссылка на созданный товар <a href="' . $resultInsertLink . '">' . $priceFileRowGoodsName . '</a>"</p>';
-                                echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара "' . $priceFileRowGoodsName . '" установлен новый статус: "В наличии"</p>';
+                                echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара "' . $priceFileRowGoodsName . '" установлен статус:"' . $priceFileRowGoodsStatus . '"</p>';
 								echo '<p>' . (new \DateTime())->format('Y-m-d H:i:s') . ': Для товара "' . $priceFileRowGoodsName . '" установлена новая цена: "' . $priceFileRowGoodsPrice . '"</p>';
                             }
                         }
